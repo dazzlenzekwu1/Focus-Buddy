@@ -8,15 +8,25 @@ const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 const hfApiToken = process.env.HUGGINGFACE_API_KEY; // Your Hugging Face API token
 const hfModel = 'distilgpt2'; // e.g., 'distilgpt2'
 
-// Create a Supabase client instance
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-// This is the main function that will be executed
 export default async function handler(req, res) {
     // Only allow POST requests to this endpoint
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
+
+    // Check if environment variables are set
+    if (!supabaseUrl || !supabaseAnonKey) {
+        console.error('Missing environment variables:', { 
+            hasSupabaseUrl: !!supabaseUrl, 
+            hasSupabaseAnonKey: !!supabaseAnonKey 
+        });
+        return res.status(500).json({ 
+            error: 'Server configuration error. Please check environment variables.' 
+        });
+    }
+
+    // Create a Supabase client instance
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
     // Extract data from the request body
     const { userId, minutes } = req.body;
@@ -29,23 +39,30 @@ export default async function handler(req, res) {
     let tipText = 'You focused for a full session!'; // Default tip
 
     try {
-        // Generate a new tip using the Hugging Face Inference API
-        const hfResponse = await fetch(`https://api-inference.huggingface.co/models/${hfModel}`, {
-            headers: { Authorization: `Bearer ${hfApiToken}` },
-            method: 'POST',
-            body: JSON.stringify({
-                inputs: "Write a short, encouraging tip for someone who just finished a focus session:",
-                parameters: {
-                    max_length: 50,
-                    min_length: 10,
-                    do_sample: true
-                }
-            })
-        });
+        // Generate a new tip using the Hugging Face Inference API (only if token is available)
+        if (hfApiToken) {
+            try {
+                const hfResponse = await fetch(`https://api-inference.huggingface.co/models/${hfModel}`, {
+                    headers: { Authorization: `Bearer ${hfApiToken}` },
+                    method: 'POST',
+                    body: JSON.stringify({
+                        inputs: "Write a short, encouraging tip for someone who just finished a focus session:",
+                        parameters: {
+                            max_length: 50,
+                            min_length: 10,
+                            do_sample: true
+                        }
+                    })
+                });
 
-        const hfResult = await hfResponse.json();
-        if (hfResult && hfResult[0] && hfResult[0].generated_text) {
-            tipText = hfResult[0].generated_text;
+                const hfResult = await hfResponse.json();
+                if (hfResult && hfResult[0] && hfResult[0].generated_text) {
+                    tipText = hfResult[0].generated_text;
+                }
+            } catch (hfError) {
+                console.error('Hugging Face API error:', hfError);
+                // Continue with default tip if HF API fails
+            }
         }
 
         // Create a new unique ID for the session

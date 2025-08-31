@@ -164,6 +164,36 @@
             }
         };
 
+        // Test simple API
+        window.testSimpleAPI = async function() {
+            const statusDiv = document.getElementById('api-status');
+            statusDiv.className = 'info';
+            statusDiv.textContent = 'Testing simple API...';
+
+            try {
+                console.log('Testing simple API endpoint...');
+                
+                const response = await fetch('/api/test');
+                console.log('Simple API response status:', response.status);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Simple API response:', data);
+                    statusDiv.className = 'success';
+                    statusDiv.textContent = `Simple API working! Environment: ${JSON.stringify(data.environment)}`;
+                } else {
+                    const errorText = await response.text();
+                    console.error('Simple API error:', errorText);
+                    statusDiv.className = 'error';
+                    statusDiv.textContent = `Simple API error: ${response.status} - ${errorText}`;
+                }
+            } catch (error) {
+                console.error('Simple API test error:', error);
+                statusDiv.className = 'error';
+                statusDiv.textContent = `Simple API test error: ${error.message}`;
+            }
+        };
+
         // Clear logs
         window.clearLogs = function() {
             logsDiv.innerHTML = '';
@@ -191,7 +221,7 @@
         // Run initial tests
         checkEnvironment();
         testFirebase();
-        testAPI();
+        testSimpleAPI();
     </script>
 </body>
 </html>

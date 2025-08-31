@@ -6,12 +6,20 @@ import { v4 as uuidv4 } from 'uuid';
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 
-// Create a Supabase client instance
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method Not Allowed' });
+    }
+
+    // Check if environment variables are set
+    if (!supabaseUrl || !supabaseAnonKey) {
+        console.error('Missing environment variables:', { 
+            hasSupabaseUrl: !!supabaseUrl, 
+            hasSupabaseAnonKey: !!supabaseAnonKey 
+        });
+        return res.status(500).json({ 
+            error: 'Server configuration error. Please check environment variables.' 
+        });
     }
 
     const { userId, sessionId, imageData } = req.body;
@@ -19,6 +27,9 @@ export default async function handler(req, res) {
     if (!userId || !sessionId || !imageData) {
         return res.status(400).json({ error: 'Missing required data.' });
     }
+
+    // Create a Supabase client instance
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
     const imageBuffer = Buffer.from(imageData, 'base64');
     const fileName = `rewards/${userId}/${uuidv4()}.png`;
