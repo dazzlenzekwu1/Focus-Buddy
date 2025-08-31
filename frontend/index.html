@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focus Buddy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manjari&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Manjari', sans-serif;
+            background-color: #f7e9d7;
+            color: #4a3e3b;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        h1, h2 {
+            font-family: 'Summer Sun', sans-serif;
+        }
+        @keyframes fluid-blob {
+            0% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+            50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+            100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+        }
+        .blob {
+            animation: fluid-blob 8s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <nav class="p-4 bg-transparent w-full flex justify-between items-center z-10">
+        <div class="flex items-center space-x-4">
+            <h1 class="text-3xl font-bold">Focus Buddy</h1>
+        </div>
+        <div class="flex items-center space-x-4">
+            <a href="index.html" class="px-4 py-2 text-xl font-medium text-gray-700 transition-colors duration-300 rounded-lg hover:text-black">Home</a>
+            <a href="timer.html" class="px-4 py-2 text-xl font-medium text-gray-700 transition-colors duration-300 rounded-lg hover:text-black">Timer</a>
+            <a href="gallery.html" class="px-4 py-2 text-xl font-medium text-gray-700 transition-colors duration-300 rounded-lg hover:text-black">Fridge</a>
+        </div>
+    </nav>
+    
+    <main class="flex-grow flex flex-col items-center justify-center p-4 text-center">
+        <div class="relative w-48 h-48 sm:w-64 sm:h-64 mb-8 mx-auto overflow-hidden rounded-full">
+            <img src="assets/pastel-blob-magnet.png" alt="Blob Character" class="w-full h-full object-cover transform scale-125 blob">
+        </div>
+        <h2 class="text-4xl sm:text-6xl font-bold mb-4">Start your focus session.</h2>
+        <p class="text-lg sm:text-xl text-gray-600 mb-8 max-w-lg mx-auto">Focus for 25 minutes to unlock a new part of your coloring page.</p>
+        <a href="timer.html" class="bg-purple-500 text-white font-bold py-4 px-10 rounded-full text-lg shadow-lg hover:bg-purple-600 transition-colors duration-300">
+            Start Focus Session
+        </a>
+    </main>
+
+    <!-- Display the User ID -->
+    <div class="p-4 text-center text-sm text-gray-500">
+        <span id="user-id-display">Signing in anonymously...</span>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase configuration and other global variables
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Set Firebase logging level for debugging
+        setLogLevel('debug');
+
+        // Handle initial authentication
+        async function authenticate() {
+            try {
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Firebase Auth Error:", error);
+            }
+        }
+
+        // Listen for authentication state changes and display the user ID
+        onAuthStateChanged(auth, (user) => {
+            const userIdDisplay = document.getElementById('user-id-display');
+            if (user) {
+                userIdDisplay.textContent = `User ID: ${user.uid}`;
+            } else {
+                userIdDisplay.textContent = `Signing in anonymously...`;
+            }
+        });
+
+        // Run the authentication function
+        authenticate();
+    </script>
+</body>
+</html>
+

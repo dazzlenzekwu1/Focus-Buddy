@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session Complete</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manjari&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Manjari', sans-serif;
+            background-color: #f7e9d7;
+            color: #4a3e3b;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            text-align: center;
+        }
+        h1, h2 {
+            font-family: 'Summer Sun', sans-serif;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+    <nav class="p-4 bg-transparent w-full flex justify-between items-center z-10">
+        <div class="flex items-center space-x-4">
+            <h1 class="text-3xl font-bold">Focus Buddy</h1>
+        </div>
+        <div class="flex items-center space-x-4">
+            <a href="index.html" class="px-4 py-2 text-xl font-medium text-gray-700 transition-colors duration-300 rounded-lg hover:text-black">Home</a>
+            <a href="timer.html" class="px-4 py-2 text-xl font-medium text-gray-700 transition-colors duration-300 rounded-lg hover:text-black">Timer</a>
+            <a href="gallery.html" class="px-4 py-2 text-xl font-medium text-gray-700 transition-colors duration-300 rounded-lg hover:text-black">Fridge</a>
+        </div>
+    </nav>
+
+    <main class="flex-grow flex flex-col items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-xl max-w-xl w-full">
+            <h2 class="text-4xl font-bold mb-4">You did it!</h2>
+            <p class="text-lg text-gray-600 mb-6">Congratulations on completing your session. Here is your finished drawing.</p>
+            <div id="coloring-page-container" class="relative w-full aspect-square bg-gray-100 rounded-xl overflow-hidden mb-6">
+                <!-- Finished coloring page image will be displayed here -->
+                <img id="finished-image" src="./assets/blob-desk-finished.jpg" alt="Finished coloring page" class="w-full h-full object-contain">
+            </div>
+            <button id="pin-button" class="bg-blue-500 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-blue-600 transition-colors duration-300">
+                Pin to Fridge
+            </button>
+        </div>
+    </main>
+
+    <!-- Firebase Scripts -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase configuration and other global variables
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Set Firebase logging level for debugging
+        setLogLevel('debug');
+        
+        // This event listener will save the reward when the button is clicked.
+        pinButton.addEventListener('click', async () => {
+            const userId = auth.currentUser ? auth.currentUser.uid : 'default-user-id';
+            const sessionId = new Date().getTime(); // A simple placeholder for a session ID
+
+            // For now, we'll use a hardcoded image data. In the future, this will come from the canvas.
+            const imageData = document.getElementById('finished-image').src;
+            
+            try {
+                const response = await fetch('/api/saveReward.js', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        userId,
+                        sessionId,
+                        imageData,
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                console.log('Reward saved successfully!');
+
+                // Redirect to the fridge gallery after the reward is saved
+                window.location.href = `gallery.html?userId=${userId}`;
+
+            } catch (error) {
+                console.error('Error pinning to fridge:', error);
+                // In a real app, I would show a message box here instead of an alert.
+                alert('Failed to pin to fridge. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
