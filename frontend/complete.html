@@ -17,7 +17,7 @@
             text-align: center;
         }
         h1, h2 {
-            font-family: 'Summer Sun', sans-serif;
+            font-family: 'Manjari', sans-serif;
         }
     </style>
 </head>
@@ -49,58 +49,99 @@
 
     <!-- Firebase Scripts -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
-        // Firebase configuration and other global variables
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDi2zTx0en5YrvO__EVJ8F2NgzeAp82DAo",
+            authDomain: "focus-buddy-1721e.firebaseapp.com",
+            projectId: "focus-buddy-1721e",
+            storageBucket: "focus-buddy-1721e.firebasestorage.app",
+            messagingSenderId: "871273072839",
+            appId: "1:871273072839:web:9c91942efa02d84c4616e2",
+            measurementId: "G-YB9ZK9JSS3"
+        };
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+        console.log('Initializing Firebase in complete.html...');
 
-        // Set Firebase logging level for debugging
-        setLogLevel('debug');
-        
-        // This event listener will save the reward when the button is clicked.
-        pinButton.addEventListener('click', async () => {
-            const userId = auth.currentUser ? auth.currentUser.uid : 'default-user-id';
-            const sessionId = new Date().getTime(); // A simple placeholder for a session ID
+        try {
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            console.log('Firebase initialized successfully in complete.html');
 
-            // For now, we'll use a hardcoded image data. In the future, this will come from the canvas.
-            const imageData = document.getElementById('finished-image').src;
-            
-            try {
-                const response = await fetch('/api/saveReward.js', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        userId,
-                        sessionId,
-                        imageData,
-                    }),
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+            // Handle initial authentication
+            async function authenticate() {
+                try {
+                    console.log('Attempting anonymous sign-in in complete.html...');
+                    const result = await signInAnonymously(auth);
+                    console.log('Anonymous sign-in successful in complete.html:', result.user.uid);
+                } catch (error) {
+                    console.error("Firebase Auth Error in complete.html:", error);
+                    console.error("Error code:", error.code);
+                    console.error("Error message:", error.message);
                 }
-
-                console.log('Reward saved successfully!');
-
-                // Redirect to the fridge gallery after the reward is saved
-                window.location.href = `gallery.html?userId=${userId}`;
-
-            } catch (error) {
-                console.error('Error pinning to fridge:', error);
-                // In a real app, I would show a message box here instead of an alert.
-                alert('Failed to pin to fridge. Please try again.');
             }
-        });
+
+            // This event listener will save the reward when the button is clicked.
+            const pinButton = document.getElementById('pin-button');
+            if (pinButton) {
+                pinButton.addEventListener('click', async () => {
+                    console.log('Pin button clicked');
+                    
+                    const userId = auth.currentUser ? auth.currentUser.uid : 'default-user-id';
+                    const sessionId = new Date().getTime(); // A simple placeholder for a session ID
+
+                    console.log('Saving reward for user:', userId);
+
+                    // For now, we'll use a hardcoded image data. In the future, this will come from the canvas.
+                    const imageData = document.getElementById('finished-image').src;
+                    
+                    try {
+                        console.log('Making API call to /api/saveReward...');
+                        const response = await fetch('/api/saveReward', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                userId,
+                                sessionId,
+                                imageData,
+                            }),
+                        });
+
+                        console.log('API response status:', response.status);
+
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            console.error('API error response:', errorText);
+                            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                        }
+
+                        const result = await response.json();
+                        console.log('Reward saved successfully!', result);
+
+                        // Redirect to the fridge gallery after the reward is saved
+                        window.location.href = `gallery.html?userId=${userId}`;
+
+                    } catch (error) {
+                        console.error('Error pinning to fridge:', error);
+                        // In a real app, I would show a message box here instead of an alert.
+                        alert('Failed to pin to fridge. Please try again. Error: ' + error.message);
+                    }
+                });
+            } else {
+                console.error('Pin button not found!');
+            }
+
+            // Run the authentication function
+            authenticate();
+
+        } catch (error) {
+            console.error('Firebase initialization error in complete.html:', error);
+        }
     </script>
 </body>
 </html>

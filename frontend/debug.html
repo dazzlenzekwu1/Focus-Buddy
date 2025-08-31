@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - Focus Buddy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        .debug-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .error {
+            color: red;
+            background: #ffe6e6;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            color: green;
+            background: #e6ffe6;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .info {
+            color: blue;
+            background: #e6f3ff;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="text-3xl font-bold mb-6">Focus Buddy Debug Page</h1>
+    
+    <div class="debug-section">
+        <h2 class="text-xl font-bold mb-4">Firebase Authentication Test</h2>
+        <div id="firebase-status" class="info">Testing Firebase...</div>
+        <button onclick="testFirebase()" class="bg-blue-500 text-white px-4 py-2 rounded">Test Firebase</button>
+    </div>
+
+    <div class="debug-section">
+        <h2 class="text-xl font-bold mb-4">API Test</h2>
+        <div id="api-status" class="info">Testing API endpoints...</div>
+        <button onclick="testAPI()" class="bg-green-500 text-white px-4 py-2 rounded">Test API</button>
+    </div>
+
+    <div class="debug-section">
+        <h2 class="text-xl font-bold mb-4">Console Logs</h2>
+        <div id="console-logs" class="bg-gray-100 p-4 rounded h-64 overflow-y-auto font-mono text-sm"></div>
+        <button onclick="clearLogs()" class="bg-gray-500 text-white px-4 py-2 rounded mt-2">Clear Logs</button>
+    </div>
+
+    <div class="debug-section">
+        <h2 class="text-xl font-bold mb-4">Environment Check</h2>
+        <div id="env-status"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+
+        // Capture console logs
+        const originalLog = console.log;
+        const originalError = console.error;
+        const logsDiv = document.getElementById('console-logs');
+
+        function addLog(message, type = 'log') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = type === 'error' ? 'text-red-600' : 'text-gray-800';
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logsDiv.appendChild(logEntry);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addLog(args.join(' '));
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addLog(args.join(' '), 'error');
+        };
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDi2zTx0en5YrvO__EVJ8F2NgzeAp82DAo",
+            authDomain: "focus-buddy-1721e.firebaseapp.com",
+            projectId: "focus-buddy-1721e",
+            storageBucket: "focus-buddy-1721e.firebasestorage.app",
+            messagingSenderId: "871273072839",
+            appId: "1:871273072839:web:9c91942efa02d84c4616e2",
+            measurementId: "G-YB9ZK9JSS3"
+        };
+
+        let app, auth;
+
+        // Test Firebase
+        window.testFirebase = async function() {
+            const statusDiv = document.getElementById('firebase-status');
+            statusDiv.className = 'info';
+            statusDiv.textContent = 'Testing Firebase...';
+
+            try {
+                console.log('Initializing Firebase...');
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                console.log('Firebase initialized successfully');
+
+                console.log('Attempting anonymous sign-in...');
+                const result = await signInAnonymously(auth);
+                console.log('Anonymous sign-in successful:', result.user.uid);
+
+                statusDiv.className = 'success';
+                statusDiv.textContent = `Firebase working! User ID: ${result.user.uid}`;
+            } catch (error) {
+                console.error('Firebase error:', error);
+                statusDiv.className = 'error';
+                statusDiv.textContent = `Firebase error: ${error.message} (Code: ${error.code})`;
+            }
+        };
+
+        // Test API
+        window.testAPI = async function() {
+            const statusDiv = document.getElementById('api-status');
+            statusDiv.className = 'info';
+            statusDiv.textContent = 'Testing API...';
+
+            try {
+                console.log('Testing API endpoints...');
+                
+                // Test getRewards endpoint
+                const response = await fetch('/api/getRewards?userId=test-user');
+                console.log('API response status:', response.status);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('API response:', data);
+                    statusDiv.className = 'success';
+                    statusDiv.textContent = 'API working! Response received.';
+                } else {
+                    const errorText = await response.text();
+                    console.error('API error:', errorText);
+                    statusDiv.className = 'error';
+                    statusDiv.textContent = `API error: ${response.status} - ${errorText}`;
+                }
+            } catch (error) {
+                console.error('API test error:', error);
+                statusDiv.className = 'error';
+                statusDiv.textContent = `API test error: ${error.message}`;
+            }
+        };
+
+        // Clear logs
+        window.clearLogs = function() {
+            logsDiv.innerHTML = '';
+        };
+
+        // Check environment
+        function checkEnvironment() {
+            const envDiv = document.getElementById('env-status');
+            const checks = [];
+
+            // Check if running on localhost
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            checks.push(`Running on: ${isLocalhost ? 'localhost' : 'production'}`);
+
+            // Check if HTTPS
+            const isHttps = window.location.protocol === 'https:';
+            checks.push(`HTTPS: ${isHttps ? 'Yes' : 'No'}`);
+
+            // Check user agent
+            checks.push(`Browser: ${navigator.userAgent.split(' ')[0]}`);
+
+            envDiv.innerHTML = checks.map(check => `<div class="info">${check}</div>`).join('');
+        }
+
+        // Run initial tests
+        checkEnvironment();
+        testFirebase();
+        testAPI();
+    </script>
+</body>
+</html>

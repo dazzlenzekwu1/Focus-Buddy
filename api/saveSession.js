@@ -1,7 +1,6 @@
 // Import the Supabase client library and the UUID library
 import { createClient } from '@supabase/supabase-js';
 import { v4 as uuidv4 } from 'uuid';
-import fetch from 'node-fetch'; // For making API calls
 
 // Environment variables for your Supabase project and Hugging Face API
 const supabaseUrl = process.env.SUPABASE_URL;

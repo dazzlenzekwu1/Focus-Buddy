@@ -36,7 +36,7 @@ export default async function handler(req, res) {
         }
 
         // Send a success response with the retrieved rewards
-        res.status(200).json({ rewards });
+        res.status(200).json(rewards);
     } catch (error) {
         console.error('Unexpected error:', error);
         res.status(500).json({ error: 'An unexpected error occurred.' });

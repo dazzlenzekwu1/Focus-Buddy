@@ -16,7 +16,7 @@
             min-height: 100vh;
         }
         h1, h2 {
-            font-family: 'Summer Sun', sans-serif;
+            font-family: 'Manjari', sans-serif;
         }
         @keyframes fluid-blob {
             0% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
@@ -59,48 +59,76 @@
 
     <!-- Firebase Scripts -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
-        // Firebase configuration and other global variables
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDi2zTx0en5YrvO__EVJ8F2NgzeAp82DAo",
+            authDomain: "focus-buddy-1721e.firebaseapp.com",
+            projectId: "focus-buddy-1721e",
+            storageBucket: "focus-buddy-1721e.firebasestorage.app",
+            messagingSenderId: "871273072839",
+            appId: "1:871273072839:web:9c91942efa02d84c4616e2",
+            measurementId: "G-YB9ZK9JSS3"
+        };
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+        console.log('Initializing Firebase...');
 
-        // Set Firebase logging level for debugging
-        setLogLevel('debug');
+        try {
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            console.log('Firebase initialized successfully');
 
-        // Handle initial authentication
-        async function authenticate() {
-            try {
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
+            // Handle initial authentication
+            async function authenticate() {
+                try {
+                    console.log('Attempting anonymous sign-in...');
+                    const result = await signInAnonymously(auth);
+                    console.log('Anonymous sign-in successful:', result.user.uid);
+                } catch (error) {
+                    console.error("Firebase Auth Error:", error);
+                    console.error("Error code:", error.code);
+                    console.error("Error message:", error.message);
+                    
+                    // Show user-friendly error
+                    const userIdDisplay = document.getElementById('user-id-display');
+                    if (userIdDisplay) {
+                        userIdDisplay.textContent = `Auth Error: ${error.message}`;
+                        userIdDisplay.style.color = 'red';
+                    }
                 }
-            } catch (error) {
-                console.error("Firebase Auth Error:", error);
+            }
+
+            // Listen for authentication state changes and display the user ID
+            onAuthStateChanged(auth, (user) => {
+                console.log('Auth state changed:', user ? 'User signed in' : 'User signed out');
+                const userIdDisplay = document.getElementById('user-id-display');
+                if (userIdDisplay) {
+                    if (user) {
+                        userIdDisplay.textContent = `User ID: ${user.uid}`;
+                        userIdDisplay.style.color = 'green';
+                    } else {
+                        userIdDisplay.textContent = `Signing in anonymously...`;
+                        userIdDisplay.style.color = 'gray';
+                    }
+                }
+            });
+
+            // Run the authentication function
+            authenticate();
+
+        } catch (error) {
+            console.error('Firebase initialization error:', error);
+            const userIdDisplay = document.getElementById('user-id-display');
+            if (userIdDisplay) {
+                userIdDisplay.textContent = `Firebase Error: ${error.message}`;
+                userIdDisplay.style.color = 'red';
             }
         }
-
-        // Listen for authentication state changes and display the user ID
-        onAuthStateChanged(auth, (user) => {
-            const userIdDisplay = document.getElementById('user-id-display');
-            if (user) {
-                userIdDisplay.textContent = `User ID: ${user.uid}`;
-            } else {
-                userIdDisplay.textContent = `Signing in anonymously...`;
-            }
-        });
-
-        // Run the authentication function
-        authenticate();
     </script>
+
 </body>
 </html>
 
