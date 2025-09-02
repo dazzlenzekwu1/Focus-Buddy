@@ -1,9 +1,6 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { motion, AnimatePresence, Reorder } from 'framer-motion'
-import { Plus, Trash2, GripVertical, CheckCircle, Circle } from 'lucide-react'
-import Navigation from '@/components/Navigation'
 
 interface Task {
   id: string
@@ -35,7 +32,7 @@ export default function TasksPage() {
   }, [newTaskText])
 
   const toggleTask = useCallback((id: string) => {
-    setTasks(prev => prev.map(task => 
+    setTasks(prev => prev.map(task =>
       task.id === id ? { ...task, completed: !task.completed } : task
     ))
   }, [])
@@ -45,7 +42,7 @@ export default function TasksPage() {
   }, [])
 
   const updateTaskPriority = useCallback((id: string, priority: Task['priority']) => {
-    setTasks(prev => prev.map(task => 
+    setTasks(prev => prev.map(task =>
       task.id === id ? { ...task, priority } : task
     ))
   }, [])
@@ -70,14 +67,8 @@ export default function TasksPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-adhd-cream via-adhd-sage to-adhd-lavender pt-24">
-      <Navigation />
-      
       <div className="container mx-auto px-4 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-2xl mx-auto"
-        >
+        <div className="max-w-2xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-gray-800 mb-2">Task Queue</h1>
@@ -102,7 +93,7 @@ export default function TasksPage() {
                 onClick={addTask}
                 className="btn-primary flex items-center space-x-2"
               >
-                <Plus className="w-5 h-5" />
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14m-7-7v14"/></svg>
                 <span>Add</span>
               </button>
             </div>
@@ -132,78 +123,65 @@ export default function TasksPage() {
             <h3 className="text-xl font-bold mb-4">Your Tasks</h3>
             {filteredTasks.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                <Circle className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                <span className="text-4xl leading-none">○</span>
                 <p>No tasks found. Add a new task to get started!</p>
               </div>
             ) : (
-              <Reorder.Group
-                axis="y"
-                values={filteredTasks}
-                onReorder={setTasks}
-                className="space-y-3"
-              >
-                <AnimatePresence>
-                  {filteredTasks.map((task) => (
-                    <Reorder.Item
-                      key={task.id}
-                      value={task}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      className="bg-white rounded-lg p-4 shadow-md border-l-4 border-transparent hover:shadow-lg transition-all duration-200"
-                      style={{
-                        borderLeftColor: task.completed ? '#10b981' : 
-                          task.priority === 'high' ? '#f87171' :
-                          task.priority === 'medium' ? '#fbbf24' : '#34d399'
-                      }}
+              <div className="space-y-3">
+                {filteredTasks.map((task) => (
+                  <div
+                    key={task.id}
+                    className="bg-white rounded-lg p-4 shadow-md border-l-4 border-transparent hover:shadow-lg transition-all duration-200 flex items-center space-x-3"
+                    style={{
+                      borderLeftColor: task.completed ? '#10b981' :
+                        task.priority === 'high' ? '#f87171' :
+                        task.priority === 'medium' ? '#fbbf24' : '#34d399'
+                    }}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-gray-400 cursor-grab"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+
+                    <button
+                      onClick={() => toggleTask(task.id)}
+                      className="flex-shrink-0"
                     >
-                      <div className="flex items-center space-x-3">
-                        <GripVertical className="w-5 h-5 text-gray-400 cursor-grab active:cursor-grabbing" />
-                        
-                        <button
-                          onClick={() => toggleTask(task.id)}
-                          className="flex-shrink-0"
-                        >
-                          {task.completed ? (
-                            <CheckCircle className="w-6 h-6 text-green-500" />
-                          ) : (
-                            <Circle className="w-6 h-6 text-gray-400 hover:text-primary-500" />
-                          )}
-                        </button>
-                        
-                        <span
-                          className={`flex-1 text-left ${
-                            task.completed ? 'line-through text-gray-500' : 'text-gray-800'
-                          }`}
-                        >
-                          {task.text}
-                        </span>
-                        
-                        <div className="flex items-center space-x-2">
-                          <select
-                            value={task.priority}
-                            onChange={(e) => updateTaskPriority(task.id, e.target.value as Task['priority'])}
-                            className={`px-2 py-1 rounded-full text-xs font-medium text-white ${priorityColors[task.priority]}`}
-                          >
-                            {(['low', 'medium', 'high'] as const).map((priority) => (
-                              <option key={priority} value={priority}>
-                                {priorityLabels[priority]}
-                              </option>
-                            ))}
-                          </select>
-                          
-                          <button
-                            onClick={() => deleteTask(task.id)}
-                            className="p-1 text-gray-400 hover:text-red-500 transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    </Reorder.Item>
-                  ))}
-                </AnimatePresence>
-              </Reorder.Group>
+                      {task.completed ? (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 text-green-500"><path d="M22 11.08V12a10 10 0 1 1-5.93-8.87"/><path d="M12 2v10"/><path d="M22 4l-7 7-3-3"/></svg>
+                      ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 text-gray-400 hover:text-primary-500"><circle cx="12" cy="12" r="10"/></svg>
+                      )}
+                    </button>
+
+                    <span
+                      className={`flex-1 text-left ${
+                        task.completed ? 'line-through text-gray-500' : 'text-gray-800'
+                      }`}
+                    >
+                      {task.text}
+                    </span>
+
+                    <div className="flex items-center space-x-2">
+                      <select
+                        value={task.priority}
+                        onChange={(e) => updateTaskPriority(task.id, e.target.value as Task['priority'])}
+                        className={`px-2 py-1 rounded-full text-xs font-medium text-white ${priorityColors[task.priority]}`}
+                      >
+                        {(['low', 'medium', 'high'] as const).map((priority) => (
+                          <option key={priority} value={priority}>
+                            {priorityLabels[priority]}
+                          </option>
+                        ))}
+                      </select>
+
+                      <button
+                        onClick={() => deleteTask(task.id)}
+                        className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
 
@@ -226,7 +204,7 @@ export default function TasksPage() {
               <div className="text-sm text-gray-600">Remaining</div>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   )
