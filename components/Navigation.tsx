@@ -76,7 +76,7 @@ export default function Nav() {
       <div className={`${isMenuOpen ? 'block' : 'hidden'} md:block md:flex-1`}>
         <div className="flex flex-col md:p-4">
           {navItems.map((item) => (
-            <Link key={item.name} href={item.href}>
+            <Link key={item.name} href={item.href}
               <div
                 className={`flex items-center space-x-3 p-4 rounded-lg transition-colors ${
                   isActive(item.href)
