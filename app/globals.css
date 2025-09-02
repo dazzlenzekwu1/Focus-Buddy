@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Manjari', sans-serif;
+  }
+  
+  h1, h2, h3 {
+    font-family: 'Summer Sun', cursive;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary-500 hover:bg-primary-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105;
+  }
+  
+  .btn-secondary {
+    @apply bg-pastel-purple hover:bg-pastel-blue text-gray-700 font-bold py-3 px-6 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105;
+  }
+  
+  .card {
+    @apply bg-white rounded-3xl shadow-xl p-8 max-w-lg w-full;
+  }
+  
+  .nav-link {
+    @apply flex flex-col items-center text-gray-400 hover:text-primary-500 transition-colors duration-300;
+  }
+  
+  .nav-link.active {
+    @apply text-primary-500 font-bold;
+  }
+}
+
+@layer utilities {
+  .text-shadow {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .blob-animation {
+    animation: blob 8s ease-in-out infinite;
+  }
+}
+
+@keyframes blob {
+  0% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+  50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+  100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+}

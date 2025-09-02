@@ -1,0 +1,233 @@
+'use client'
+
+import { useState, useCallback } from 'react'
+import { motion, AnimatePresence, Reorder } from 'framer-motion'
+import { Plus, Trash2, GripVertical, CheckCircle, Circle } from 'lucide-react'
+import Navigation from '@/components/Navigation'
+
+interface Task {
+  id: string
+  text: string
+  completed: boolean
+  priority: 'low' | 'medium' | 'high'
+}
+
+export default function TasksPage() {
+  const [tasks, setTasks] = useState<Task[]>([
+    { id: '1', text: 'Complete project proposal', completed: false, priority: 'high' },
+    { id: '2', text: 'Review meeting notes', completed: false, priority: 'medium' },
+    { id: '3', text: 'Organize workspace', completed: true, priority: 'low' },
+  ])
+  const [newTaskText, setNewTaskText] = useState('')
+  const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all')
+
+  const addTask = useCallback(() => {
+    if (newTaskText.trim()) {
+      const newTask: Task = {
+        id: Date.now().toString(),
+        text: newTaskText.trim(),
+        completed: false,
+        priority: 'medium',
+      }
+      setTasks(prev => [newTask, ...prev])
+      setNewTaskText('')
+    }
+  }, [newTaskText])
+
+  const toggleTask = useCallback((id: string) => {
+    setTasks(prev => prev.map(task => 
+      task.id === id ? { ...task, completed: !task.completed } : task
+    ))
+  }, [])
+
+  const deleteTask = useCallback((id: string) => {
+    setTasks(prev => prev.filter(task => task.id !== id))
+  }, [])
+
+  const updateTaskPriority = useCallback((id: string, priority: Task['priority']) => {
+    setTasks(prev => prev.map(task => 
+      task.id === id ? { ...task, priority } : task
+    ))
+  }, [])
+
+  const filteredTasks = tasks.filter(task => {
+    if (filter === 'active') return !task.completed
+    if (filter === 'completed') return task.completed
+    return true
+  })
+
+  const priorityColors = {
+    low: 'bg-pastel-green',
+    medium: 'bg-pastel-yellow',
+    high: 'bg-pastel-pink',
+  }
+
+  const priorityLabels = {
+    low: 'Low',
+    medium: 'Medium',
+    high: 'High',
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-adhd-cream via-adhd-sage to-adhd-lavender pt-24">
+      <Navigation />
+      
+      <div className="container mx-auto px-4 py-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-2xl mx-auto"
+        >
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-gray-800 mb-2">Task Queue</h1>
+            <p className="text-lg text-gray-600">
+              Organize your tasks in a way that works for your ADHD brain
+            </p>
+          </div>
+
+          {/* Add New Task */}
+          <div className="card mb-8">
+            <h3 className="text-xl font-bold mb-4">Add New Task</h3>
+            <div className="flex space-x-3">
+              <input
+                type="text"
+                value={newTaskText}
+                onChange={(e) => setNewTaskText(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && addTask()}
+                placeholder="What do you need to focus on?"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              />
+              <button
+                onClick={addTask}
+                className="btn-primary flex items-center space-x-2"
+              >
+                <Plus className="w-5 h-5" />
+                <span>Add</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Filter Tabs */}
+          <div className="flex justify-center mb-6">
+            <div className="bg-white rounded-lg p-1 shadow-md">
+              {(['all', 'active', 'completed'] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setFilter(tab)}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    filter === tab
+                      ? 'bg-primary-500 text-white'
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Task List */}
+          <div className="card">
+            <h3 className="text-xl font-bold mb-4">Your Tasks</h3>
+            {filteredTasks.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <Circle className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                <p>No tasks found. Add a new task to get started!</p>
+              </div>
+            ) : (
+              <Reorder.Group
+                axis="y"
+                values={filteredTasks}
+                onReorder={setTasks}
+                className="space-y-3"
+              >
+                <AnimatePresence>
+                  {filteredTasks.map((task) => (
+                    <Reorder.Item
+                      key={task.id}
+                      value={task}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      className="bg-white rounded-lg p-4 shadow-md border-l-4 border-transparent hover:shadow-lg transition-all duration-200"
+                      style={{
+                        borderLeftColor: task.completed ? '#10b981' : 
+                          task.priority === 'high' ? '#f87171' :
+                          task.priority === 'medium' ? '#fbbf24' : '#34d399'
+                      }}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <GripVertical className="w-5 h-5 text-gray-400 cursor-grab active:cursor-grabbing" />
+                        
+                        <button
+                          onClick={() => toggleTask(task.id)}
+                          className="flex-shrink-0"
+                        >
+                          {task.completed ? (
+                            <CheckCircle className="w-6 h-6 text-green-500" />
+                          ) : (
+                            <Circle className="w-6 h-6 text-gray-400 hover:text-primary-500" />
+                          )}
+                        </button>
+                        
+                        <span
+                          className={`flex-1 text-left ${
+                            task.completed ? 'line-through text-gray-500' : 'text-gray-800'
+                          }`}
+                        >
+                          {task.text}
+                        </span>
+                        
+                        <div className="flex items-center space-x-2">
+                          <select
+                            value={task.priority}
+                            onChange={(e) => updateTaskPriority(task.id, e.target.value as Task['priority'])}
+                            className={`px-2 py-1 rounded-full text-xs font-medium text-white ${priorityColors[task.priority]}`}
+                          >
+                            {(['low', 'medium', 'high'] as const).map((priority) => (
+                              <option key={priority} value={priority}>
+                                {priorityLabels[priority]}
+                              </option>
+                            ))}
+                          </select>
+                          
+                          <button
+                            onClick={() => deleteTask(task.id)}
+                            className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </Reorder.Item>
+                  ))}
+                </AnimatePresence>
+              </Reorder.Group>
+            )}
+          </div>
+
+          {/* Task Stats */}
+          <div className="mt-8 grid grid-cols-3 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary-600">{tasks.length}</div>
+              <div className="text-sm text-gray-600">Total Tasks</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">
+                {tasks.filter(t => t.completed).length}
+              </div>
+              <div className="text-sm text-gray-600">Completed</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-yellow-600">
+                {tasks.filter(t => !t.completed).length}
+              </div>
+              <div className="text-sm text-gray-600">Remaining</div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  )
+}
