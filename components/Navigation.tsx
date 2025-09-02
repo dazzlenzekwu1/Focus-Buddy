@@ -1,3 +1,4 @@
+:Navigation:components/Navigation.tsx
 'use client'
 
 import React, { useState, useEffect } from 'react'
@@ -9,9 +10,11 @@ import { hasPremiumAccess } from '@/lib/paystack'
 export default function Navigation() {
   const pathname = usePathname()
   const [isPremium, setIsPremium] = useState(false)
+  // hasMounted state is crucial for controlling rendering based on client-side conditions
   const [hasMounted, setHasMounted] = useState(false)
 
   useEffect(() => {
+    // This code only runs on the client after the component mounts
     setHasMounted(true)
     setIsPremium(hasPremiumAccess())
   }, [])
@@ -35,15 +38,16 @@ export default function Navigation() {
             <Link
               key={item.href}
               href={item.href}
-              className={`nav-link ${isActive ? 'active' : ''} ${hasMounted && item.premium && isPremium ? 'text-yellow-600' : ''}`}
+              className={`nav-link ${isActive ? 'active' : ''}`}
             >
-              <div className="relative">
-                <Icon className="w-6 h-6 mb-1" />
+              <div className="relative flex flex-col items-center">
+                <Icon className="w-6 h-6" />
+                {/* This badge is only rendered if the component has mounted on the client */}
                 {hasMounted && item.premium && isPremium && (
-                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-500 rounded-full"></div>
+                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-500 rounded-full animate-ping"></div>
                 )}
+                <span className="text-xs">{item.label}</span>
               </div>
-              <span className="text-xs">{item.label}</span>
             </Link>
           )
         })}
