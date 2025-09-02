@@ -3,10 +3,74 @@
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Play, Pause, RotateCcw, Volume2, VolumeX } from 'lucide-react'
-import Navigation from '@/components/Navigation'
-import FocusTimer from '@/components/FocusTimer'
-import MotivationalTip from '@/components/MotivationalTip'
-import ProgressCircle from '@/components/ProgressCircle'
+
+// These components were moved here to make the app self-contained.
+const ProgressCircle = ({ progress, size, strokeWidth, color }) => {
+  const radius = (size - strokeWidth) / 2
+  const circumference = 2 * Math.PI * radius
+  const strokeDashoffset = circumference - (progress / 100) * circumference
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg
+        className="transform -rotate-90"
+        width={size}
+        height={size}
+      >
+        <circle
+          stroke="#e5e7eb"
+          fill="transparent"
+          strokeWidth={strokeWidth}
+          r={radius}
+          cx={size / 2}
+          cy={size / 2}
+        />
+        <circle
+          stroke={color}
+          fill="transparent"
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          r={radius}
+          cx={size / 2}
+          cy={size / 2}
+          className="transition-all duration-300 ease-in-out"
+        />
+      </svg>
+    </div>
+  )
+}
+
+const MotivationalTip = () => {
+  const tips = [
+    "You've got this! Just one task at a time.",
+    "Small steps lead to big wins.",
+    "Your focus is a superpower.",
+    "Don't worry about being perfect. Just start.",
+    "A moment of focus is a step forward.",
+    "Reward yourself for every completed session!",
+  ]
+  const [tip, setTip] = useState(tips[0])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const newTip = tips[Math.floor(Math.random() * tips.length)]
+      setTip(newTip)
+    }, 10000) // Change tip every 10 seconds
+    return () => clearInterval(interval)
+  }, [])
+
+  return (
+    <motion.div
+      key={tip}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white/50 backdrop-blur-sm rounded-lg p-4 text-center shadow-md border-2 border-adhd-sage"
+    >
+      <p className="italic text-gray-700">"{tip}"</p>
+    </motion.div>
+  )
+}
 
 export default function TimerPage() {
   const [isRunning, setIsRunning] = useState(false)
@@ -74,20 +138,18 @@ export default function TimerPage() {
     }
   }, [isRunning, isPaused, timeRemaining, completeSession])
 
-  const formatTime = (seconds: number) => {
+  const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
   }
 
-  const progress = sessionType === 'focus' 
+  const progress = sessionType === 'focus'
     ? ((focusTime - timeRemaining) / focusTime) * 100
     : ((breakTime - timeRemaining) / breakTime) * 100
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-adhd-cream via-adhd-sage to-adhd-lavender pt-24">
-      <Navigation />
-      
       <div className="container mx-auto px-4 py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -100,8 +162,8 @@ export default function TimerPage() {
               {sessionType === 'focus' ? 'Focus Time' : 'Break Time'}
             </h1>
             <p className="text-lg text-gray-600">
-              {sessionType === 'focus' 
-                ? 'Stay focused on your task' 
+              {sessionType === 'focus'
+                ? 'Stay focused on your task'
                 : 'Take a well-deserved break'
               }
             </p>
@@ -110,8 +172,8 @@ export default function TimerPage() {
           {/* Timer Display */}
           <div className="card text-center mb-8">
             <div className="relative mb-8">
-              <ProgressCircle 
-                progress={progress} 
+              <ProgressCircle
+                progress={progress}
                 size={300}
                 strokeWidth={8}
                 color={sessionType === 'focus' ? '#0ea5e9' : '#10b981'}
@@ -153,7 +215,7 @@ export default function TimerPage() {
                   <span>Pause</span>
                 </button>
               )}
-              
+
               <button
                 onClick={resetTimer}
                 className="btn-secondary flex items-center space-x-2"
@@ -180,9 +242,9 @@ export default function TimerPage() {
           <div className="card">
             <h3 className="text-xl font-bold mb-4 text-center">Your Progress</h3>
             <div className="w-full h-64 bg-gray-200 rounded-xl flex items-center justify-center overflow-hidden">
-              <img 
-                src="/assets/blob-desk-light.jpg" 
-                alt="Coloring Page Progress" 
+              <img
+                src="https://placehold.co/600x400/98d2c4/4e7d70?text=Coloring+Page+Progress"
+                alt="Coloring Page Progress"
                 className="w-full h-full object-cover"
               />
             </div>
