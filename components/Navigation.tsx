@@ -76,22 +76,17 @@ export default function Nav() {
       <div className={`${isMenuOpen ? 'block' : 'hidden'} md:block md:flex-1`}>
         <div className="flex flex-col md:p-4">
           {navItems.map((item) => (
-            <Link key={item.name} href={item.href}
-              <div
-                className={`flex items-center space-x-3 p-4 rounded-lg transition-colors ${
-                  isActive(item.href)
-                    ? 'bg-primary-500 text-white shadow-md'
-                    : 'text-gray-600 hover:bg-gray-100'
-                }`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <div className="w-5 h-5">{item.icon}</div>
-                <span className="text-lg font-medium">{item.name}</span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
-    </nav>
+            <Link
+  href={item.href}
+  className={`lg transition-colors ${
+    isActive(item.href)
+      ? "bg-primary-500 text-white shadow-md"
+      : "text-gray-600 hover:bg-gray-100"
+  }`}
+  onClick={() => setIsMenuOpen(false)}
+>
+  <div className="w-5 h-5">{item.icon}</div>
+  <span className="text-lg font-medium">{item.name}</span>
+</Link>
   )
 }
