@@ -43,12 +43,14 @@ export default function MotivationalTip() {
   const [isVisible, setIsVisible] = useState(true)
   const [isPremium, setIsPremium] = useState(false)
   const [tipSource, setTipSource] = useState<'basic' | 'premium'>('basic')
+  const [hasMounted, setHasMounted] = useState(false)
 
   useEffect(() => {
-    // Check premium status
+    setHasMounted(true)
     setIsPremium(hasPremiumAccess())
-    
-    // Choose tip source based on premium status
+  }, [])
+
+  useEffect(() => {
     setTipSource(isPremium ? 'premium' : 'basic')
   }, [isPremium])
 
@@ -88,7 +90,7 @@ export default function MotivationalTip() {
           <div className="flex-1">
             <div className="flex items-center space-x-2 mb-2">
               <h3 className="text-lg font-bold">Motivational Tip</h3>
-              {isPremium ? (
+              {hasMounted && isPremium ? (
                 <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">
                   Premium AI
                 </span>
@@ -109,7 +111,7 @@ export default function MotivationalTip() {
               {tips[currentTip]}
             </motion.p>
 
-            {!isPremium && (
+            {hasMounted && !isPremium && (
               <div className="bg-white/50 rounded-lg p-3 border border-yellow-200">
                 <div className="flex items-center space-x-2 mb-2">
                   <Lock className="w-4 h-4 text-yellow-600" />

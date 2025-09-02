@@ -1,5 +1,6 @@
 'use client'
 
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Home, Clock, CheckSquare, Image as ImageIcon, Crown } from 'lucide-react'
@@ -7,7 +8,13 @@ import { hasPremiumAccess } from '@/lib/paystack'
 
 export default function Navigation() {
   const pathname = usePathname()
-  const isPremium = hasPremiumAccess()
+  const [isPremium, setIsPremium] = useState(false)
+  const [hasMounted, setHasMounted] = useState(false)
+
+  useEffect(() => {
+    setHasMounted(true)
+    setIsPremium(hasPremiumAccess())
+  }, [])
 
   const navItems = [
     { href: '/', label: 'Home', icon: Home },
@@ -28,11 +35,11 @@ export default function Navigation() {
             <Link
               key={item.href}
               href={item.href}
-              className={`nav-link ${isActive ? 'active' : ''} ${item.premium && isPremium ? 'text-yellow-600' : ''}`}
+              className={`nav-link ${isActive ? 'active' : ''} ${hasMounted && item.premium && isPremium ? 'text-yellow-600' : ''}`}
             >
               <div className="relative">
                 <Icon className="w-6 h-6 mb-1" />
-                {item.premium && isPremium && (
+                {hasMounted && item.premium && isPremium && (
                   <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-500 rounded-full"></div>
                 )}
               </div>

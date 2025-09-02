@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Check, Crown, Star, Zap } from 'lucide-react'
-import Navigation from '@/components/Navigation'
 import { 
   SUBSCRIPTION_PLANS, 
   initializePaystack, 
@@ -21,8 +20,10 @@ export default function SubscriptionPage() {
   const [showCelebration, setShowCelebration] = useState(false)
   const [currentSubscription, setCurrentSubscription] = useState<any>(null)
   const [userEmail, setUserEmail] = useState('user@example.com')
+  const [hasMounted, setHasMounted] = useState(false)
 
   useEffect(() => {
+    setHasMounted(true)
     // Get current subscription status
     const subscription = getCurrentSubscription()
     setCurrentSubscription(subscription)
@@ -104,8 +105,6 @@ export default function SubscriptionPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-adhd-cream via-adhd-sage to-adhd-lavender pt-24">
-      <Navigation />
-      
       <div className="container mx-auto px-4 py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -124,7 +123,7 @@ export default function SubscriptionPage() {
           </div>
 
           {/* Current Subscription Status */}
-          {currentSubscription && (
+          {hasMounted && currentSubscription && (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
