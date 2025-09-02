@@ -2,6 +2,9 @@
 
 A modern, responsive web application designed specifically for ADHD needs, featuring a focus timer, task management, and visual rewards system.
 
+# Deployment
+View live link here https://focus-buddy-gu5n.vercel.app/index.html
+
 ## 🎯 Project Overview
 
 Focus Buddy helps users with ADHD maintain focus through:
